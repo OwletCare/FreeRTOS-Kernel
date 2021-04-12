@@ -1410,6 +1410,25 @@ void vTaskSuspendAll( void ) PRIVILEGED_FUNCTION;
  */
 BaseType_t xTaskResumeAll( void ) PRIVILEGED_FUNCTION;
 
+/**
+ * task. h
+ * <pre>signed portBASE_TYPE xTaskIsTaskFinished( xTaskHandle xTask );</pre>
+ *
+ * Utility task that simply returns pdTRUE if the task has terminated.
+ *
+ */
+signed portBASE_TYPE xTaskIsTaskFinished( TaskHandle_t xTask ) PRIVILEGED_FUNCTION;
+
+/**
+ * task. h
+ * <pre>xTaskHandle xTaskGetCurrentThread( void );</pre>
+ *
+ * Utility task that simply returns the task handle of the current thread.
+ *
+ */
+TaskHandle_t xTaskGetCurrentThread( void ) PRIVILEGED_FUNCTION;
+
+
 /*-----------------------------------------------------------
 * TASK UTILITIES
 *----------------------------------------------------------*/

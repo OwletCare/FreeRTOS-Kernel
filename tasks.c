@@ -1984,6 +1984,28 @@ static void prvAddNewTaskToReadyList( TCB_t * pxNewTCB )
 #endif /* ( ( INCLUDE_xTaskResumeFromISR == 1 ) && ( INCLUDE_vTaskSuspend == 1 ) ) */
 /*-----------------------------------------------------------*/
 
+#if ( configSUPPORT_STATIC_ALLOCATION == 1 )
+void vApplicationGetIdleTaskMemory( StaticTask_t **ppxIdleTaskTCBBuffer,
+                                    StackType_t **ppxIdleTaskStackBuffer,
+                                    uint32_t *pulIdleTaskStackSize )
+{
+    static StaticTask_t xIdleTaskTCB;
+    static StackType_t uxIdleTaskStack[ configMINIMAL_STACK_SIZE ];
+
+    /* Pass out a pointer to the StaticTask_t structure in which the Idle task's
+    state will be stored. */
+    *ppxIdleTaskTCBBuffer = &xIdleTaskTCB;
+
+    /* Pass out the array that will be used as the Idle task's stack. */
+    *ppxIdleTaskStackBuffer = uxIdleTaskStack;
+
+    /* Pass out the size of the array pointed to by *ppxIdleTaskStackBuffer.
+    Note that, as the array is necessarily of type StackType_t,
+    configMINIMAL_STACK_SIZE is specified in words, not bytes. */
+    *pulIdleTaskStackSize = configMINIMAL_STACK_SIZE;
+}
+#endif
+
 void vTaskStartScheduler( void )
 {
     BaseType_t xReturn;
@@ -5380,6 +5402,51 @@ static void prvAddCurrentTaskToDelayedList( TickType_t xTicksToWait,
     #include "tasks_test_access_functions.h"
 #endif
 
+
+#if ( INCLUDE_xTaskIsTaskFinished == 1 )
+signed portBASE_TYPE xTaskIsTaskFinished( TaskHandle_t xTask )
+{
+    int i;
+    const tskTCB * const pxTCB = ( tskTCB * ) xTask;
+
+    /* It does not make sense to check if the calling task is suspended. */
+    configASSERT( xTask );
+
+    /* Is the task we are attempting to resume actually in the
+    suspended list? */
+    if ( pxCurrentTCB == pxTCB )
+    {
+        return pdFALSE;
+    }
+    taskENTER_CRITICAL();
+
+    if ( ( listIS_CONTAINED_WITHIN( &xSuspendedTaskList, &( pxTCB->xStateListItem ) ) != pdFALSE ) ||
+         ( listIS_CONTAINED_WITHIN( &xDelayedTaskList1, &( pxTCB->xStateListItem ) ) != pdFALSE ) ||
+         ( listIS_CONTAINED_WITHIN( &xDelayedTaskList2, &( pxTCB->xStateListItem ) ) != pdFALSE ) ||
+         ( listIS_CONTAINED_WITHIN( &xPendingReadyList, &( pxTCB->xStateListItem ) ) != pdFALSE ) )
+    {
+        taskEXIT_CRITICAL();
+        return pdFALSE;
+    }
+    for ( i = 0; i < configMAX_PRIORITIES; i++ )
+    {
+        if ( listIS_CONTAINED_WITHIN( &pxReadyTasksLists[ i ], &( pxTCB->xStateListItem ) ) != pdFALSE )
+        {
+            taskEXIT_CRITICAL();
+            return pdFALSE;
+        }
+    }
+    taskEXIT_CRITICAL();
+    return pdTRUE;
+}
+#endif /* INCLUDE_xTaskIsTaskFinished */
+
+#if ( INCLUDE_xTaskGetCurrentThread == 1 )
+TaskHandle_t xTaskGetCurrentThread( void )
+{
+    return (TaskHandle_t) pxCurrentTCB;
+}
+#endif
 
 #if ( configINCLUDE_FREERTOS_TASK_C_ADDITIONS_H == 1 )
 
