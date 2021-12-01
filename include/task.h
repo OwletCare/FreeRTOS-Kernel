@@ -3065,6 +3065,8 @@ TaskHandle_t pvTaskIncrementMutexHeldCount( void ) PRIVILEGED_FUNCTION;
  */
 void vTaskInternalSetTimeOutState( TimeOut_t * const pxTimeOut ) PRIVILEGED_FUNCTION;
 
+// Owlet specific code
+void printMinStackDepth(void(*print)(const char *format, ...));
 
 /* *INDENT-OFF* */
 #ifdef __cplusplus

@@ -5433,3 +5433,40 @@ static void prvAddCurrentTaskToDelayedList( TickType_t xTicksToWait,
     #endif
 
 #endif /* if ( configINCLUDE_FREERTOS_TASK_C_ADDITIONS_H == 1 ) */
+
+/*
+ * Owlet specific code
+ * This is debug code, which will be called from log manager, and will print out minimum
+ * stack depth for each task
+ **/
+void printMinStackDepth(void(*print)(const char *format, ...))
+{
+	enum
+	{
+		MAX_NUM_TASK = 20,
+	};
+	TaskStatus_t TaskStatusArray[MAX_NUM_TASK];
+	TaskStatus_t *pxTaskStatusArray = TaskStatusArray;
+	volatile UBaseType_t uxArraySize, x;
+	uint32_t ulTotalTime, ulStatsAsPercentage;
+	/* Take a snapshot of the number of tasks in case it changes while this
+	function is executing. */
+	uxArraySize = uxCurrentNumberOfTasks;
+	// Make sure number of task is less than whatever we assigned,
+	// otherwise there is a chance that we might write beyond array.
+	if (uxArraySize > MAX_NUM_TASK)
+	{
+		return;
+	}
+	
+	if (pxTaskStatusArray != NULL)
+	{
+		uxArraySize = uxTaskGetSystemState(pxTaskStatusArray, uxArraySize, &ulTotalTime);
+		for (x = 0; x < uxArraySize; x++)
+		{
+			print("Task Name: %s, Min stack depth: %d",
+				pxTaskStatusArray[x].pcTaskName,
+				pxTaskStatusArray[x].usStackHighWaterMark);
+		}
+	}
+}
