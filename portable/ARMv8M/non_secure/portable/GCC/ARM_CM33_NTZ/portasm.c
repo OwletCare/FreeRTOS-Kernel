@@ -1,6 +1,8 @@
 /*
- * FreeRTOS Kernel V10.4.3
- * Copyright (C) 2020 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+ * FreeRTOS Kernel <DEVELOPMENT BRANCH>
+ * Copyright (C) 2021 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+ *
+ * SPDX-License-Identifier: MIT
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,7 +24,6 @@
  * https://www.FreeRTOS.org
  * https://github.com/FreeRTOS
  *
- * 1 tab == 4 spaces!
  */
 
 /* Standard includes. */
@@ -67,6 +68,21 @@ void vRestoreContextOfFirstTask( void ) /* __attribute__ (( naked )) PRIVILEGED_
             "	ldr  r2, xRBARConst2							\n"/* r2 = 0xe000ed9c [Location of RBAR]. */
             "	ldmia r1!, {r4-r11}								\n"/* Read 4 set of RBAR/RLAR registers from TCB. */
             "	stmia r2!, {r4-r11}								\n"/* Write 4 set of RBAR/RLAR registers using alias registers. */
+            "													\n"
+            #if ( configTOTAL_MPU_REGIONS == 16 )
+            "	ldr  r2, xRNRConst2								\n"/* r2 = 0xe000ed98 [Location of RNR]. */
+            "	movs r3, #8										\n"/* r3 = 8. */
+            "	str  r3, [r2]									\n"/* Program RNR = 8. */
+            "	ldr  r2, xRBARConst2							\n"/* r2 = 0xe000ed9c [Location of RBAR]. */
+            "	ldmia r1!, {r4-r11}								\n"/* Read 4 set of RBAR/RLAR registers from TCB. */
+            "	stmia r2!, {r4-r11}								\n"/* Write 4 set of RBAR/RLAR registers using alias registers. */
+            "	ldr  r2, xRNRConst2								\n"/* r2 = 0xe000ed98 [Location of RNR]. */
+            "	movs r3, #12									\n"/* r3 = 12. */
+            "	str  r3, [r2]									\n"/* Program RNR = 12. */
+            "	ldr  r2, xRBARConst2							\n"/* r2 = 0xe000ed9c [Location of RBAR]. */
+            "	ldmia r1!, {r4-r11}								\n"/* Read 4 set of RBAR/RLAR registers from TCB. */
+            "	stmia r2!, {r4-r11}								\n"/* Write 4 set of RBAR/RLAR registers using alias registers. */
+            #endif /* configTOTAL_MPU_REGIONS == 16 */
             "													\n"
             "	ldr r2, xMPUCTRLConst2							\n"/* r2 = 0xe000ed94 [Location of MPU_CTRL]. */
             "	ldr r4, [r2]									\n"/* Read the value of MPU_CTRL. */
@@ -260,6 +276,21 @@ void PendSV_Handler( void ) /* __attribute__ (( naked )) PRIVILEGED_FUNCTION */
             "	ldr r2, xRBARConst								\n"/* r2 = 0xe000ed9c [Location of RBAR]. */
             "	ldmia r1!, {r4-r11}								\n"/* Read 4 sets of RBAR/RLAR registers from TCB. */
             "	stmia r2!, {r4-r11}								\n"/* Write 4 set of RBAR/RLAR registers using alias registers. */
+            "													\n"
+            #if ( configTOTAL_MPU_REGIONS == 16 )
+            "	ldr r2, xRNRConst								\n"/* r2 = 0xe000ed98 [Location of RNR]. */
+            "	movs r3, #8										\n"/* r3 = 8. */
+            "	str r3, [r2]									\n"/* Program RNR = 8. */
+            "	ldr r2, xRBARConst								\n"/* r2 = 0xe000ed9c [Location of RBAR]. */
+            "	ldmia r1!, {r4-r11}								\n"/* Read 4 sets of RBAR/RLAR registers from TCB. */
+            "	stmia r2!, {r4-r11}								\n"/* Write 4 set of RBAR/RLAR registers using alias registers. */
+            "	ldr r2, xRNRConst								\n"/* r2 = 0xe000ed98 [Location of RNR]. */
+            "	movs r3, #12									\n"/* r3 = 12. */
+            "	str r3, [r2]									\n"/* Program RNR = 12. */
+            "	ldr r2, xRBARConst								\n"/* r2 = 0xe000ed9c [Location of RBAR]. */
+            "	ldmia r1!, {r4-r11}								\n"/* Read 4 sets of RBAR/RLAR registers from TCB. */
+            "	stmia r2!, {r4-r11}								\n"/* Write 4 set of RBAR/RLAR registers using alias registers. */
+            #endif /* configTOTAL_MPU_REGIONS == 16 */
             "													\n"
             "	ldr r2, xMPUCTRLConst							\n"/* r2 = 0xe000ed94 [Location of MPU_CTRL]. */
             "	ldr r4, [r2]									\n"/* Read the value of MPU_CTRL. */
